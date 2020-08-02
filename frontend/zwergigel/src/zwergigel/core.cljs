@@ -17,6 +17,9 @@
 (defn main-page []
   [:div
    [:h1 [c/button "Zwergigel" #(<| :page (if (|> :token) v/video v/sign-in))]]
+   (if (|> :alert)
+     (let [[type text] (|> :alert)]
+       [:div {:class [type "box"] :on-click #(<| :alert nil)} text]))
    (cond
      (|> :token) [:div [menu] [(|> :page)]]
      (= (|> :page) v/sign-up) [(|> :page)]

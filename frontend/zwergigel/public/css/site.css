@@ -81,3 +81,21 @@ button:hover {
   box-sizing: border-box;
   font-size: 14px;
 }
+
+.box {
+  width: 400px;
+  height: 20px;
+  margin: 0 auto 15px;
+  text-align: center;
+  padding: 20px;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+.info {
+  background-color: #479e47;
+}
+
+.error {
+  background-color: #d95454;
+}

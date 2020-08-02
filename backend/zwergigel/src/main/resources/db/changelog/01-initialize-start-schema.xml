@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet  id="1" author="authorName">
+
+        <createSequence sequenceName="users_seq" startValue="1"/>
+        <createTable tableName="users">
+            <column name="id" type="bigint" defaultValueSequenceNext="users_seq">
+                <constraints nullable="false" unique="true" primaryKey="true"/>
+            </column>
+            <column name="login" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="video_seq" startValue="1"/>
+        <createTable tableName="video">
+            <column name="id" type="bigint" defaultValueSequenceNext="video_seq">
+                <constraints nullable="false" unique="true" primaryKey="true"/>
+            </column>
+            <column name="url" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="bigint"/>
+            <column name="paid" type="bigint"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="thumbnail_url" type="varchar(255)"/>
+            <column name="user_id" type="bigint">
+                <constraints foreignKeyName="fk_video_user" referencedColumnNames="users(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

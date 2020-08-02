@@ -1,5 +1,6 @@
 package com.example.zwergigel.controller;
 
+import com.example.zwergigel.dto.VideoData;
 import com.example.zwergigel.dto.VideoDto;
 import com.example.zwergigel.entity.User;
 import com.example.zwergigel.entity.Video;
@@ -41,12 +42,12 @@ public class VideoController {
 
     private Set<VideoDto> getVideosBy(User u) {
         return videoRepository.findByUser(u).stream()
-            .map(v -> new VideoDto(v.getId(), v.getUrl(), v.getDuration(), v.getPaid()))
+            .map(v -> new VideoDto(v.getId(), v.getUrl(), v.getDuration(), v.getPaid(), v.getName(), v.getThumbnailUrl()))
             .collect(Collectors.toSet());
     }
 
     @PostMapping("/add/{token}")
-    public ResponseEntity<Object> add(@PathVariable("token") UUID token, @RequestBody Map<String, String> dto) {
+    public ResponseEntity<Set<VideoDto>> add(@PathVariable("token") UUID token, @RequestBody Map<String, String> dto) {
         final String url = dto.get("url");
         final long paid = Long.parseLong(dto.get("paid"));
         Optional<User> mbUser = tokenService.verify(token);
@@ -56,9 +57,9 @@ public class VideoController {
         final User user = mbUser.get();
         final Video video = videoRepository.findByUrlAndUser(url, user)
             .map(v -> v.addPaid(paid))
-            .orElseGet(() -> new Video(url, YoutubeUtil.getDuration(url), paid, user));
+            .orElseGet(() -> new Video(url, paid, YoutubeUtil.getData(url), user));
         videoRepository.save(video);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(getVideosBy(user));
     }
 
     @PostMapping("/delete/{token}")
@@ -69,6 +70,22 @@ public class VideoController {
         }
         final User user = mbUser.get();
         videoRepository.deleteByIdAndUser(id, user);
+        return ResponseEntity.ok(getVideosBy(user));
+    }
+
+    @PostMapping("/plus/{token}")
+    public ResponseEntity<Set<VideoDto>> plus(@PathVariable("token") UUID token,
+                                              @RequestParam("id") Long id, @RequestParam("paid") Long paid) {
+        Optional<User> mbUser = tokenService.verify(token);
+        if (mbUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        final User user = mbUser.get();
+        Optional<Video> mbVideo = videoRepository.findByIdAndUser(id, user);
+        if (mbVideo.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        mbVideo.map(v -> v.addPaid(paid)).ifPresent(videoRepository::save);
         return ResponseEntity.ok(getVideosBy(user));
     }
 }

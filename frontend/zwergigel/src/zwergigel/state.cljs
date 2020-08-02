@@ -3,7 +3,8 @@
 
 (defonce current (atom {:token nil
                         :page nil
-                        :video nil}))
+                        :video nil
+                        :alert nil}))
 
 (defn <| [k v] (swap! current assoc k v))
 

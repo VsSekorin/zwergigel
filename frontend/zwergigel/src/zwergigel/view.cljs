@@ -7,33 +7,40 @@
 
 (declare sign-up)
 
-(defn error [] [:div "Something went wrong."])
+(defn add-alert [type text] (<| :alert [type text]))
+(defn error [text] (add-alert :error text))
+(defn info [text] (add-alert :info text))
+
+(defn to-page [page] (<| :alert nil) (<| :page page))
 
 (defn handle-video [rsp]
   (if (= 200 (:status rsp))
     (<| :video (sort-by :coefficient > (:body rsp)))
-    (<| :page error)))
+    (error "Something went wrong.")))
 
 (defn get-video-list [] (http/query :get :video '{} handle-video))
 
 (defn video-action [name id rkw]
   [c/button name #(http/query :post [:video rkw] {:query-params {"id" id}} handle-video)])
 
+(defn video-item [{:keys [id] :as item}]
+  (let [add (atom "")]
+    [:li
+     (str item)
+     [c/a-input "number" add]
+     [c/button "+" #(http/query :post :video/plus {:query-params {"id" id "paid" @  add}} handle-video)]
+     [video-action "X" id :delete]]))
+
 (defn video []
-  (get-video-list)
-  (fn []
-    (let [url (atom "") paid (atom "")]
-      [:div
+  (let [url (atom "") paid (atom "")]
+    [:div
        [:div.new-video
         [c/a-input "text" url {:placeholder "URL"}] [c/a-input "number" paid {:placeholder "RUB"}]
-        [c/button "Add" #(http/query :post :video/add {:json-params {:url @url :paid @paid}}
-                                     (fn [rsp] (if (= 200 (:status rsp))
-                                                 (get-video-list)
-                                                 (<| :page error))))]]
+        [c/button "Add" #(http/query :post :video/add {:json-params {:url @url :paid @paid}} handle-video)]]
        [:div.video
         [:ol
-         (for [{:keys [id] :as item} (|> :video)]
-           [:li (str item) [video-action "X" id :delete]])]]])))
+         (for [{:keys [id] :as item} (|> :video)] ^{:key id}
+           [video-item item])]]]))
 
 (defn settings [] [:div "Settings"])
 
@@ -44,10 +51,12 @@
      [c/a-input "password" pass {:placeholder "Password"}]
      [c/button "Sign in" #(http/query-no-auth :post :sign-in
                                               {:json-params {:login @login :password @pass}}
-                                              (fn [rsp] (when (= 200 (:status rsp))
-                                                          (<| :token (:body rsp))
-                                                          (<| :page video))))]
-     [c/button "Sign up" #(<| :page sign-up)]]))
+                                              (fn [rsp] (if (= 200 (:status rsp))
+                                                          (do (<| :token (:body rsp))
+                                                              (get-video-list)
+                                                              (to-page video))
+                                                          (error "Incorrect login or password."))))]
+     [c/button "Sign up" #(to-page sign-up)]]))
 
 (defn sign-up []
   (let [login (atom "") pass (atom "") name (atom "")]
@@ -57,6 +66,7 @@
      [c/a-input "text" name {:placeholder "Name"}]
      [c/button "Sign up" #(http/query-no-auth :post :sign-up
                                               {:json-params {:login @login :password @pass :name @name}}
-                                              (fn [rsp] (when (= 200 (:status rsp))
-                                                          (<| :page sign-in))))]
-     [c/button "Back" #(<| :page sign-in)]]))
+                                              (fn [rsp] (if (= 200 (:status rsp))
+                                                          (do (to-page sign-in) (info "Successful!"))
+                                                          (error "Please choose another login."))))]
+     [c/button "Back" #(to-page sign-in)]]))

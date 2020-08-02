@@ -11,7 +11,7 @@
              :video "video/"
              :video/add "video/add/"
              :video/delete "video/delete/"
-             :video/plus "video/plus"})
+             :video/plus "video/plus/"})
 
 (defmulti get-path keyword?)
 (defmethod get-path true [kw] (kw routes))

@@ -1,10 +1,10 @@
 package com.example.zwergigel.entity;
 
+import com.example.zwergigel.dto.VideoData;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.Duration;
 
 @Entity
 @Getter @Setter
@@ -15,8 +15,10 @@ public class Video {
     private Long id;
 
     private String url;
-    private Duration duration;
+    private Long duration;
     private Long paid;
+    private String name;
+    private String thumbnailUrl;
 
     @ManyToOne @JoinColumn
     private User user;
@@ -24,10 +26,16 @@ public class Video {
     public Video() {
     }
 
-    public Video(String url, Duration duration, Long paid, User user) {
+    public Video(String url, Long paid, VideoData data, User user) {
+        this(url, data.getDuration(), paid, data.getName(), data.getThumbnailUrl(), user);
+    }
+
+    public Video(String url, Long duration, Long paid, String name, String thumbnailUrl, User user) {
         this.url = url;
         this.duration = duration;
         this.paid = paid;
+        this.name = name;
+        this.thumbnailUrl = thumbnailUrl;
         this.user = user;
     }
 
