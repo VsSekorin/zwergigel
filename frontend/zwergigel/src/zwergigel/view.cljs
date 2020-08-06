@@ -23,13 +23,18 @@
 (defn video-action [name id rkw]
   [c/button name #(http/query :post [:video rkw] {:query-params {"id" id}} handle-video)])
 
-(defn video-item [{:keys [id] :as item}]
+(defn video-item [{:keys [id name paid coefficient duration thumbnailUrl] :as item}]
   (let [add (atom "")]
-    [:li
-     (str item)
-     [c/a-input "number" add]
-     [c/button "+" #(http/query :post :video/plus {:query-params {"id" id "paid" @  add}} handle-video)]
-     [video-action "X" id :delete]]))
+    [:li.row
+      [:div.column.left [:img {:src thumbnailUrl :width 100}]]
+      [:div.column.middle
+       [:p "Name: " name]
+       [:p "Duration: " duration " Paid: " paid " Coefficient: " coefficient]]
+      [:div.column.right
+       [c/a-input "number" add]
+       [c/button "Add" #(http/query :post :video/plus {:query-params {"id" id "paid" @  add}} handle-video)]
+       [:br]
+       [video-action "Remove" id :delete]]]))
 
 (defn video []
   (let [url (atom "") paid (atom "")]

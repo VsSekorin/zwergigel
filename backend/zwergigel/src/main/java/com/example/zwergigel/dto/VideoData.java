@@ -1,9 +1,10 @@
 package com.example.zwergigel.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter @Setter
+@Getter @Setter @With
+@AllArgsConstructor
+@EqualsAndHashCode
 public final class VideoData {
 
     private String name;
