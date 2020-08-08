@@ -1,6 +1,5 @@
 package com.example.zwergigel.controller;
 
-import com.example.zwergigel.dto.VideoData;
 import com.example.zwergigel.dto.VideoDto;
 import com.example.zwergigel.entity.User;
 import com.example.zwergigel.entity.Video;
@@ -70,6 +69,17 @@ public class VideoController {
         }
         final User user = mbUser.get();
         videoRepository.deleteByIdAndUser(id, user);
+        return ResponseEntity.ok(getVideosBy(user));
+    }
+
+    @GetMapping("/delete-all/{token}")
+    public ResponseEntity<Set<VideoDto>> deleteAll(@PathVariable("token") UUID token) {
+        Optional<User> mbUser = tokenService.verify(token);
+        if (mbUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        final User user = mbUser.get();
+        videoRepository.deleteAllByUser(user);
         return ResponseEntity.ok(getVideosBy(user));
     }
 

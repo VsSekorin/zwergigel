@@ -18,12 +18,12 @@
     (<| :video (sort-by :coefficient > (:body rsp)))
     (error "Something went wrong.")))
 
-(defn get-video-list [] (http/query :get :video '{} handle-video))
+(defn get-video-list [] (http/query :get :video handle-video))
 
 (defn video-action [name id rkw]
   [c/button name #(http/query :post [:video rkw] {:query-params {"id" id}} handle-video)])
 
-(defn video-item [{:keys [id name paid coefficient duration thumbnailUrl] :as item}]
+(defn video-item [{:keys [id name paid coefficient duration thumbnailUrl]}]
   (let [add (atom "")]
     [:li.row
       [:div.column.left [:img {:src thumbnailUrl :width 100}]]
@@ -39,13 +39,12 @@
 (defn video []
   (let [url (atom "") paid (atom "")]
     [:div
-       [:div.new-video
-        [c/a-input "text" url {:placeholder "URL"}] [c/a-input "number" paid {:placeholder "RUB"}]
-        [c/button "Add" #(http/query :post :video/add {:json-params {:url @url :paid @paid}} handle-video)]]
-       [:div.video
-        [:ol
-         (for [{:keys [id] :as item} (|> :video)] ^{:key id}
-           [video-item item])]]]))
+     [:div.new-video
+      [c/a-input "text" url {:placeholder "URL"}] [c/a-input "number" paid {:placeholder "RUB"}]
+      [c/button "Add" #(http/query :post :video/add {:json-params {:url @url :paid @paid}} handle-video)]]
+     [:div.menu [c/button "Remove all" #(http/query :get :video/delete-all handle-video)]]
+     [:div.video
+      [:ol (for [{:keys [id] :as item} (|> :video)] ^{:key id} [video-item item])]]]))
 
 (defn settings [] [:div "Settings"])
 

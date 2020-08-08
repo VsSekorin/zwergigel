@@ -134,3 +134,7 @@ button:hover {
   box-sizing: border-box;
   font-size: 14px;
 }
+
+.video li {
+  list-style-type: none;
+}
